@@ -44,18 +44,31 @@ object NumbersAndStrings {
     }
   }
 
+  object Injections {
+    import Injection._
+    type ValueInjection[A] = Injection[A,Value]
+
+    implicit val doubleInject: ValueInjection[Double] =
+      (d) => Number(d)
+
+    implicit val stringInject: ValueInjection[String] =
+      (s) => Chars(s)
+  }
+
   object Lift {
-    import Refinements._
     import Refinement._
+    import Refinements._
+    import Injection._
+    import Injections._
 
     // Lift a function on types A ... to a function on Values. Use this to make
     // Scala's builtins work with Values.
 
-    def lift[A: ValueRefinement](f: A => Value): Value => Result[Value] =
-      (v: Value) => v.refine[A] map f
+    def lift[A: ValueRefinement, B: ValueInjection](f: A => B): Value => Result[Value] =
+      (v: Value) => v.refine[A] map (a => f(a).inject[B])
 
-    def lift[A: ValueRefinement,B: ValueRefinement](f: (A,B) => Value): (Value, Value) => Result[Value] =
-      (v1: Value, v2: Value) => (v1.refine[A] |@| v2.refine[B]) map f
+    def lift[A: ValueRefinement,B: ValueRefinement, C: ValueInjection](f: (A,B) => C): (Value, Value) => Result[Value] =
+      (v1: Value, v2: Value) => (v1.refine[A] |@| v2.refine[B]) map ((a, b) => f(a,b).inject[C])
   }
 
   // Expressions ----------
