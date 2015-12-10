@@ -1,6 +1,6 @@
 package untyped
 
-object Arithemtic {
+object Arithmetic {
   sealed trait Expression {
     def eval: Double =
       ???
@@ -31,5 +31,11 @@ object Arithemtic {
     val four = value(2) + value(2)
     val nine = value(3) * value(3)
     val one  = (value(3) * value(2)) / (value(3) + value(3))
+
+    def go() = {
+      println(s"Four evaluates to ${four.eval}")
+      println(s"Nine evaluates to ${nine.eval}")
+      println(s"One evaluates to ${one.eval}")
+    }
   }
 }
