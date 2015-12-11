@@ -39,12 +39,12 @@ object Orchestration {
       FreeApplicative.lift(Fetch(service) : Request[A])
   }
 
-  object ToyInterpreter extends (Request ~> Id) {
+  object IdInterpreter extends (Request ~> Id) {
     import Id._
 
     def apply[A](in: Request[A]): Id[A] =
       in match {
-        case Stage(r) => r.foldMap(ToyInterpreter)
+        case Stage(r) => r.foldMap(IdInterpreter)
         case Fetch(service) =>
           service match {
             case GetTweets(userId) =>
