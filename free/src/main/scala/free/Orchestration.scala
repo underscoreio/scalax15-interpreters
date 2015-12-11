@@ -27,7 +27,6 @@ object Orchestration {
 
   // A request represents a request for data
   sealed trait Request[A]
-  final case class Pure[A](get: A) extends Request[A]
   final case class Fetch[A](service: Service[A]) extends Request[A]
   final case class Stage[A](request: FreeApplicative[Request,A]) extends Request[A]
 
@@ -35,9 +34,6 @@ object Orchestration {
   object Request {
     def stage[A](stage: FreeApplicative[Request, A]): Free[Request, A] =
       Free.liftF(Stage(stage))
-
-    def pure[A](a: A): FreeApplicative[Request, A] =
-      FreeApplicative.lift(Pure(a) : Request[A])
 
     def fetch[A](service: Service[A]): FreeApplicative[Request, A] =
       FreeApplicative.lift(Fetch(service) : Request[A])
@@ -48,7 +44,6 @@ object Orchestration {
 
     def apply[A](in: Request[A]): Id[A] =
       in match {
-        case Pure(a) => a
         case Stage(r) => r.foldMap(ToyInterpreter)
         case Fetch(service) =>
           service match {
@@ -80,7 +75,6 @@ object Orchestration {
 
     def apply[A](in: Request[A]): Future[A] =
       in match {
-        case Pure(a) => Future.successful(a)
         case Stage(r) => r.foldMap(FutureInterpreter)
         case Fetch(service) =>
           service match {
